@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>Kalkulator Ahli Waris — Faraidh</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#170a05">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Faraidh">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital@1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#0a0503;
+    --bg1:#170a05;
+    --glass:rgba(255,255,255,0.07);
+    --glass-strong:rgba(255,255,255,0.12);
+    --glass-border:rgba(255,255,255,0.14);
+    --glass-border-soft:rgba(255,255,255,0.08);
+    --text:#fbf1e8;
+    --text-dim:rgba(251,241,232,0.62);
+    --text-faint:rgba(251,241,232,0.38);
+    --accent1:#ff9a44;
+    --accent2:#ff3d2e;
+    --accent-grad:linear-gradient(135deg,#ffb154 0%,#ff7a30 45%,#ff3d2e 100%);
+    --radius-xl:20px; /* card radius per mobile-app spec */
+    --radius-lg:22px;
+    --radius-md:16px;
+    --radius-pill:999px;
+    --good:#7bdc9b;
+    --warn:#ffcf6b;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    min-height:100vh;
+    font-family:'Plus Jakarta Sans', system-ui, sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(ellipse 900px 560px at 50% -10%, rgba(255,120,50,0.38), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 15%, rgba(255,60,40,0.18), transparent 55%),
+      radial-gradient(ellipse 800px 600px at -10% 60%, rgba(255,150,60,0.10), transparent 55%),
+      linear-gradient(180deg, var(--bg1) 0%, var(--bg0) 45%, #050302 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+    overscroll-behavior-y:none;
+  }
+  /* decorative orbit lines + sparkles, like reference art */
+  .deco{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .deco svg{ position:absolute; opacity:0.16; }
+  .deco .orb1{ top:-60px; left:-120px; width:520px; }
+  .deco .orb2{ bottom:40px; right:-160px; width:560px; }
+  .spark{ position:fixed; font-size:22px; color:rgba(255,255,255,0.5); z-index:0; }
+  .spark.s1{ top:64px; left:22px; }
+  .spark.s2{ bottom:34px; right:26px; }
+
+  .wrap{ position:relative; z-index:1; max-width:640px; margin:0 auto; padding:14px 16px 28px; }
+
+  /* ---------- header ---------- */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-badge{
+    width:42px; height:42px; border-radius:14px;
+    background:var(--accent-grad);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; box-shadow:0 6px 18px rgba(255,90,40,0.35);
+  }
+  .brand-text .t1{ font-weight:800; font-size:15px; letter-spacing:.2px; }
+  .brand-text .t2{ font-size:11.5px; color:var(--text-dim); }
+  .icon-pill{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--glass); border:1px solid var(--glass-border);
+    backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+
+  .hero{ text-align:center; padding:14px 6px 26px; }
+  .hero h1{ font-size:25px; font-weight:800; margin:0 0 8px; line-height:1.25; }
+  .hero p{ margin:0; color:var(--text-dim); font-size:13.5px; line-height:1.55; padding:0 8px;}
+
+  /* ---------- glass card ---------- */
+  .card{
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius-xl);
+    backdrop-filter:blur(22px) saturate(170%); -webkit-backdrop-filter:blur(22px) saturate(170%);
+    box-shadow:0 10px 34px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+    padding:20px 18px;
+    margin-bottom:16px;
+  }
+  .card-head{ display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .card-head .ic{ width:34px; height:34px; border-radius:11px; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border-soft); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;}
+  .card-title{ font-weight:700; font-size:15.5px; }
+  .card-sub{ font-size:12px; color:var(--text-faint); margin-top:1px;}
+  .card-body{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .hint{ font-size:11.5px; color:var(--text-faint); margin-top:-6px; line-height:1.4; }
+
+  /* ---------- row: label + control ---------- */
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .row-label{ font-size:14px; font-weight:500; color:var(--text); }
+  .row-label small{ display:block; font-size:11px; font-weight:400; color:var(--text-faint); margin-top:2px; }
+
+  /* stepper */
+  .stepper{ display:flex; align-items:center; gap:0; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border-soft); border-radius:var(--radius-pill); padding:4px; flex-shrink:0; }
+  .stepper button{
+    width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(255,255,255,0.09); color:var(--text); font-size:16px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; transition:background .15s, transform .1s;
+    line-height:1;
+  }
+  .stepper button:active{ transform:scale(0.9); }
+  .stepper button.plus{ background:var(--accent-grad); }
+  .stepper button:disabled{ opacity:.3; cursor:not-allowed; }
+  .stepper .val{ width:30px; text-align:center; font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums; }
+
+  /* toggle switch */
+  .toggle{ width:50px; height:29px; border-radius:var(--radius-pill); background:rgba(255,255,255,0.10); border:1px solid var(--glass-border-soft); position:relative; cursor:pointer; flex-shrink:0; transition:background .2s; }
+  .toggle .knob{ position:absolute; top:2px; left:2px; width:23px; height:23px; border-radius:50%; background:#ddd; transition:transform .2s, background .2s; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
+  .toggle.on{ background:var(--accent-grad); }
+  .toggle.on .knob{ transform:translateX(21px); background:#fff; }
+
+  /* currency input */
+  .curr-wrap{ position:relative; }
+  .curr-wrap .prefix{ position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:14px; font-weight:600; pointer-events:none; }
+  input.curr{
+    width:100%; padding:14px 16px 14px 40px; border-radius:var(--radius-pill);
+    background:rgba(255,255,255,0.07); border:1px solid var(--glass-border-soft);
+    color:var(--text); font-size:15px; font-weight:600; font-family:inherit;
+    outline:none; transition:border-color .15s, background .15s;
+  }
+  input.curr::placeholder{ color:var(--text-faint); font-weight:500; }
+  input.curr:focus{ border-color:rgba(255,150,70,0.55); background:rgba(255,255,255,0.10); }
+  .field-label{ font-size:12.5px; color:var(--text-dim); margin-bottom:6px; font-weight:600; }
+
+  .divider{ height:1px; background:linear-gradient(90deg, transparent, var(--glass-border), transparent); margin:2px 0; }
+
+  .link-toggle{ display:flex; align-items:center; justify-content:center; gap:6px; font-size:12.5px; color:var(--text-dim); cursor:pointer; padding:6px 0 0; user-select:none; }
+  .link-toggle span.chev{ transition:transform .2s; font-size:10px; }
+  .link-toggle.open span.chev{ transform:rotate(180deg); }
+  .advanced-body{ display:none; flex-direction:column; gap:12px; margin-top:12px; }
+  .advanced-body.open{ display:flex; }
+  .cap-note{ font-size:11.5px; color:var(--warn); line-height:1.4; }
+
+  /* CTA button like the reference "Start" pill */
+  .cta{
+    display:block; width:100%; text-align:center; padding:17px; margin:22px 0 8px;
+    border-radius:var(--radius-pill); border:none; cursor:pointer;
+    background:var(--accent-grad); color:#1a0700; font-weight:800; font-size:15.5px;
+    box-shadow:0 12px 30px rgba(255,80,30,0.38), inset 0 1px 0 rgba(255,255,255,0.35);
+    letter-spacing:.2px;
+    transition:transform .12s;
+  }
+  .cta:active{ transform:scale(0.98); }
+
+  /* ---------- results ---------- */
+  #results{ display:none; }
+  #results.show{ display:block; }
+  .badge-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .badge{ font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:var(--radius-pill); background:rgba(255,255,255,0.08); border:1px solid var(--glass-border-soft); color:var(--text-dim); }
+  .badge.hot{ background:linear-gradient(135deg, rgba(255,154,68,.25), rgba(255,61,46,.25)); color:#ffcf9e; border-color:rgba(255,140,70,.4); }
+
+  .summary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .summary-item{ background:rgba(255,255,255,0.05); border:1px solid var(--glass-border-soft); border-radius:var(--radius-md); padding:12px 14px; }
+  .summary-item .lab{ font-size:11px; color:var(--text-faint); margin-bottom:4px; }
+  .summary-item .val{ font-size:15.5px; font-weight:800; }
+  .summary-item.wide{ grid-column:1 / -1; }
+
+  .heir-row{ display:flex; align-items:center; justify-content:space-between; padding:13px 4px; border-bottom:1px solid var(--glass-border-soft); gap:10px; }
+  .heir-row:last-child{ border-bottom:none; }
+  .heir-name{ font-weight:700; font-size:14px; }
+  .heir-meta{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+  .heir-right{ text-align:right; flex-shrink:0; }
+  .heir-frac{ font-size:11.5px; color:var(--text-dim); font-weight:600; }
+  .heir-total{ font-size:14.5px; font-weight:800; background:linear-gradient(135deg,#ffcf9e,#ff9a6a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .heir-per{ font-size:11px; color:var(--text-faint); margin-top:1px; }
+
+  .note-item{ display:flex; gap:9px; font-size:12.5px; color:var(--text-dim); line-height:1.55; padding:9px 0; }
+  .note-item .dot{ flex-shrink:0; width:6px; height:6px; border-radius:50%; background:var(--accent1); margin-top:6px; }
+
+  .gugur-item{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; color:var(--text-faint); border-bottom:1px dashed var(--glass-border-soft); }
+  .gugur-item:last-child{ border-bottom:none; }
+  .gugur-item b{ color:var(--text-dim); font-weight:600; }
+
+  .empty-state{ text-align:center; padding:30px 10px; color:var(--text-faint); font-size:13px; }
+
+  footer.disclaimer{ margin-top:8px; padding:16px 18px; }
+  footer.disclaimer p{ font-size:11.5px; color:var(--text-faint); line-height:1.6; margin:0; }
+
+
+  /* ================= MOBILE APP SHELL ================= */
+  html{ height:100%; }
+  body{ height:100%; }
+  .app-shell{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    max-width:640px; margin:0 auto;
+    background:transparent;
+  }
+
+  /* ---- app header ---- */
+  .app-header{
+    flex:0 0 auto;
+    position:relative; z-index:5;
+    padding:calc(env(safe-area-inset-top, 0px) + 14px) 18px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(12,6,4,0.55);
+    border-bottom:1px solid var(--glass-border-soft);
+    backdrop-filter:blur(22px) saturate(170%); -webkit-backdrop-filter:blur(22px) saturate(170%);
+  }
+  .header-title{ font-size:17px; font-weight:800; letter-spacing:.1px; transition:opacity .15s; }
+  .header-sub{ font-size:11.5px; color:var(--text-faint); margin-top:1px; transition:opacity .15s; }
+  .header-icon{
+    width:36px; height:36px; border-radius:12px;
+    background:var(--accent-grad);
+    display:flex; align-items:center; justify-content:center; font-size:17px;
+    box-shadow:0 6px 16px rgba(255,90,40,0.32); flex-shrink:0;
+  }
+
+  /* ---- pages / scroll area ---- */
+  main.pages{
+    flex:1 1 auto;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    position:relative;
+    scrollbar-width:none;
+  }
+  main.pages::-webkit-scrollbar{ display:none; }
+
+  .page{ display:none; padding:0 0 calc(env(safe-area-inset-bottom, 0px) + 92px); }
+  .page.active{
+    display:block;
+    animation:pageIn .34s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes pageIn{
+    from{ opacity:0; transform:translateY(16px) scale(0.99); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* ---- bottom navigation ---- */
+  .bottom-nav{
+    flex:0 0 auto;
+    position:relative; z-index:5;
+    display:flex;
+    padding:8px 10px calc(env(safe-area-inset-bottom, 0px) + 8px);
+    background:rgba(12,6,4,0.6);
+    border-top:1px solid var(--glass-border-soft);
+    backdrop-filter:blur(24px) saturate(170%); -webkit-backdrop-filter:blur(24px) saturate(170%);
+  }
+  .nav-item{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; padding:8px 4px 6px; cursor:pointer;
+    color:var(--text-faint); font-family:inherit;
+    position:relative;
+  }
+  .nav-item .nav-ic{ font-size:19px; line-height:1; filter:grayscale(1) opacity(0.7); transition:filter .2s, transform .2s; }
+  .nav-item .nav-label{ font-size:10.5px; font-weight:600; color:var(--text-faint); transition:color .2s; }
+  .nav-item .nav-dot{ position:absolute; top:0; left:50%; transform:translateX(-50%) scale(0); width:5px; height:5px; border-radius:50%; background:var(--accent-grad); transition:transform .2s; }
+  .nav-item.active .nav-ic{ filter:none; transform:translateY(-1px); }
+  .nav-item.active .nav-label{
+    background:var(--accent-grad); -webkit-background-clip:text; background-clip:text; color:transparent;
+    font-weight:800;
+  }
+  .nav-item.active .nav-dot{ transform:translateX(-50%) scale(1); }
+  .nav-item:active{ transform:scale(0.94); }
+
+  /* small "about" bits used on Info tab */
+  .about-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:9px 0; border-bottom:1px dashed var(--glass-border-soft); color:var(--text-dim); }
+  .about-line:last-child{ border-bottom:none; }
+  .about-line b{ color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="deco">
+  <svg class="orb1" viewBox="0 0 400 400" fill="none"><ellipse cx="200" cy="200" rx="190" ry="120" stroke="white" stroke-width="1" transform="rotate(-18 200 200)"/></svg>
+  <svg class="orb2" viewBox="0 0 400 400" fill="none"><ellipse cx="200" cy="200" rx="190" ry="130" stroke="white" stroke-width="1" transform="rotate(12 200 200)"/></svg>
+</div>
+<div class="spark s1">✦</div>
+<div class="spark s2">✦</div>
+
+<div class="app-shell">
+
+  <header class="app-header" id="appHeader">
+    <div>
+      <div class="header-title" id="headerTitle">Ahli Waris</div>
+      <div class="header-sub" id="headerSub">Masukkan data ahli waris</div>
+    </div>
+    <div class="header-icon">🕌</div>
+  </header>
+
+  <main class="pages">
+
+    <section class="page active" id="page-waris">
+      <div class="wrap">
+  <!-- ANAK & CUCU -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">👧</div>
+      <div><div class="card-title">Anak &amp; Cucu</div><div class="card-sub">Keturunan langsung pewaris</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Anak Laki-laki</div><div class="stepper" data-key="nAL"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="row"><div class="row-label">Anak Perempuan</div><div class="stepper" data-key="nAP"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="divider"></div>
+      <div class="row"><div class="row-label">Cucu Laki-laki <small>dari anak laki-laki</small></div><div class="stepper" data-key="nCL"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="row"><div class="row-label">Cucu Perempuan <small>dari anak laki-laki</small></div><div class="stepper" data-key="nCP"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="hint">Cucu hanya relevan bila tidak ada anak laki-laki yang masih hidup — otomatis gugur bila ada.</div>
+    </div>
+  </div>
+
+  <!-- ORANG TUA -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">👴</div>
+      <div><div class="card-title">Orang Tua &amp; Kakek/Nenek</div><div class="card-sub">Garis ke atas</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Ayah</div><div class="toggle" data-key="AY"><div class="knob"></div></div></div>
+      <div class="row"><div class="row-label">Ibu</div><div class="toggle" data-key="IB"><div class="knob"></div></div></div>
+      <div class="divider"></div>
+      <div class="row"><div class="row-label">Kakek <small>dari Ayah</small></div><div class="toggle" data-key="KK"><div class="knob"></div></div></div>
+      <div class="row"><div class="row-label">Nenek</div><div class="toggle" data-key="NN"><div class="knob"></div></div></div>
+      <div class="hint">Kakek gugur jika Ayah masih hidup. Nenek gugur jika Ibu masih hidup.</div>
+    </div>
+  </div>
+
+  <!-- SAUDARA KANDUNG -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">🧑‍🤝‍🧑</div>
+      <div><div class="card-title">Saudara/i Kandung</div><div class="card-sub">Seayah &amp; seibu dengan pewaris</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Saudara Laki-laki Kandung</div><div class="stepper" data-key="nSDK"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="row"><div class="row-label">Saudari Kandung</div><div class="stepper" data-key="nSRK"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+    </div>
+  </div>
+
+  <!-- SAUDARA SEAYAH -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">🧑</div>
+      <div><div class="card-title">Saudara/i Seayah</div><div class="card-sub">Ayah sama, ibu berbeda</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Saudara Laki-laki Seayah</div><div class="stepper" data-key="nSDA"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="row"><div class="row-label">Saudari Seayah</div><div class="stepper" data-key="nSRA"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+    </div>
+  </div>
+
+  <!-- SAUDARA SEIBU -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">🧑‍🍼</div>
+      <div><div class="card-title">Saudara/i Seibu</div><div class="card-sub">Ibu sama, ayah berbeda</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Saudara Laki-laki Seibu</div><div class="stepper" data-key="nSBL"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="row"><div class="row-label">Saudari Seibu</div><div class="stepper" data-key="nSBP"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="hint">Bagian saudara/i seibu dibagi rata tanpa memandang jenis kelamin.</div>
+    </div>
+  </div>
+
+  <!-- PASANGAN -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">💍</div>
+      <div><div class="card-title">Pasangan</div><div class="card-sub">Suami atau istri pewaris</div></div>
+    </div>
+    <div class="card-body">
+      <div class="row"><div class="row-label">Suami</div><div class="toggle" data-key="SU"><div class="knob"></div></div></div>
+      <div class="row"><div class="row-label">Jumlah Istri <small>maks. 4</small></div><div class="stepper" data-key="nIS"><button class="minus">–</button><div class="val">0</div><button class="plus">+</button></div></div>
+      <div class="hint">Isi salah satu saja — Suami dan Istri saling meniadakan.</div>
+    </div>
+  </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-harta">
+      <div class="wrap">
+  <!-- HARTA -->
+  <div class="card">
+    <div class="card-head">
+      <div class="ic">💰</div>
+      <div><div class="card-title">Harta Warisan</div><div class="card-sub">Nominal yang akan dibagi</div></div>
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="field-label">Total Harta Warisan</div>
+        <div class="curr-wrap"><span class="prefix">Rp</span><input type="text" inputmode="numeric" class="curr" data-key="harta" placeholder="0"></div>
+      </div>
+      <div class="link-toggle" id="advToggle"><span>Ada pengurangan sebelum dibagi? (biaya jenazah, hutang, wasiat)</span><span class="chev">▾</span></div>
+      <div class="advanced-body" id="advBody">
+        <div>
+          <div class="field-label">Biaya Pengurusan Jenazah</div>
+          <div class="curr-wrap"><span class="prefix">Rp</span><input type="text" inputmode="numeric" class="curr" data-key="biaya" placeholder="0"></div>
+        </div>
+        <div>
+          <div class="field-label">Hutang Pewaris</div>
+          <div class="curr-wrap"><span class="prefix">Rp</span><input type="text" inputmode="numeric" class="curr" data-key="hutang" placeholder="0"></div>
+        </div>
+        <div>
+          <div class="field-label">Wasiat <small style="font-weight:400;">(maks. 1/3 dari sisa)</small></div>
+          <div class="curr-wrap"><span class="prefix">Rp</span><input type="text" inputmode="numeric" class="curr" data-key="wasiat" placeholder="0"></div>
+        </div>
+        <div class="cap-note" id="capNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="cta" id="calcBtn">Hitung Pembagian Warisan</button>
+      </div>
+    </section>
+
+    <section class="page" id="page-hasil">
+      <div class="wrap">
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="card" id="summaryCard">
+      <div class="card-head"><div class="ic">📊</div><div><div class="card-title">Ringkasan</div><div class="card-sub" id="summarySub">Hasil perhitungan</div></div></div>
+      <div class="badge-row" id="badgeRow"></div>
+      <div class="summary-grid" id="summaryGrid"></div>
+    </div>
+
+    <div class="card" id="heirsCard">
+      <div class="card-head"><div class="ic">🧾</div><div><div class="card-title">Rincian Bagian Ahli Waris</div><div class="card-sub">Fraksi, total, dan per orang</div></div></div>
+      <div id="heirsList"></div>
+    </div>
+
+    <div class="card" id="notesCard" style="display:none;">
+      <div class="card-head"><div class="ic">📝</div><div><div class="card-title">Catatan Perhitungan</div><div class="card-sub">'Aul, Radd, Gharrawain, Akdariyyah, dll.</div></div></div>
+      <div id="notesList"></div>
+    </div>
+
+    <div class="card" id="gugurCard" style="display:none;">
+      <div class="card-head"><div class="ic">🚫</div><div><div class="card-title">Ahli Waris yang Gugur</div><div class="card-sub">Tidak mendapat bagian (hujub)</div></div></div>
+      <div id="gugurList"></div>
+    </div>
+  </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-info">
+      <div class="wrap">
+        <div class="card">
+          <div class="card-head"><div class="ic">🕌</div><div><div class="card-title">Kalkulator Ahli Waris</div><div class="card-sub">Faraidh — Ilmu Waris Islam</div></div></div>
+          <div class="card-body">
+            <div class="about-line"><span>Versi</span><b>2.0 — Mobile App</b></div>
+            <div class="about-line"><span>Metode</span><b>Fraksi eksak (bukan estimasi)</b></div>
+            <div class="about-line"><span>Kaidah khusus</span><b>'Aul, Radd, Gharrawain, Akdariyyah</b></div>
+          </div>
+        </div>
+  <footer class="disclaimer">
+    <p>⚠️ Kalkulator ini adalah alat bantu belajar ilmu faraidh dan mencakup kaidah-kaidah umum yang paling sering dijumpai (termasuk kaidah 'aul, radd, Gharrawain/'Umariyyatain, dan Akdariyyah). Untuk kasus nyata yang melibatkan kombinasi ahli waris yang sangat jarang atau bernilai besar, tetap konsultasikan perhitungan akhir kepada ustadz/ahli faraidh atau lembaga yang berwenang sebelum dibagikan.</p>
+  </footer>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-target="page-waris">
+      <div class="nav-dot"></div>
+      <span class="nav-ic">👪</span>
+      <span class="nav-label">Ahli Waris</span>
+    </button>
+    <button class="nav-item" data-target="page-harta">
+      <div class="nav-dot"></div>
+      <span class="nav-ic">💰</span>
+      <span class="nav-label">Harta</span>
+    </button>
+    <button class="nav-item" data-target="page-hasil">
+      <div class="nav-dot"></div>
+      <span class="nav-ic">📊</span>
+      <span class="nav-label">Hasil</span>
+    </button>
+    <button class="nav-item" data-target="page-info">
+      <div class="nav-dot"></div>
+      <span class="nav-ic">ℹ️</span>
+      <span class="nav-label">Info</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+// ================= FRACTION CLASS & ENGINE =================
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b, a%b]; } return a||1; }
+class Frac{
+  constructor(n,d=1){
+    if(d<0){ n=-n; d=-d; }
+    const g = gcd(n,d)||1;
+    this.n = n/g; this.d = d/g;
+  }
+  add(o){ return new Frac(this.n*o.d + o.n*this.d, this.d*o.d); }
+  sub(o){ return new Frac(this.n*o.d - o.n*this.d, this.d*o.d); }
+  mul(o){ if(typeof o==="number") o=new Frac(o,1); return new Frac(this.n*o.n, this.d*o.d); }
+  div(o){ if(typeof o==="number") o=new Frac(o,1); return new Frac(this.n*o.d, this.d*o.n); }
+  cmp(o){ const l=this.n*o.d, r=o.n*this.d; return l<r?-1:(l>r?1:0); }
+  gt(o){ return this.cmp(o)>0; }
+  isZero(){ return this.n===0; }
+  toNumber(){ return this.n/this.d; }
+  static max(...arr){ return arr.reduce((a,b)=> b.gt(a)?b:a); }
+  toString(){ return this.d===1? `${this.n}` : `${this.n}/${this.d}`; }
+}
+const F0 = new Frac(0,1);
+const F1 = new Frac(1,1);
+function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
+
+function calculate(inp){
+  const notes = [];
+  let specialCase = null;
+
+  const maleDesc = (inp.nAL>0) || (inp.nCL>0);
+  const anyDesc = (inp.nAL>0)||(inp.nAP>0)||(inp.nCL>0)||(inp.nCP>0);
+  const sibTotalCount = inp.nSDK+inp.nSRK+inp.nSDA+inp.nSRA+inp.nSBL+inp.nSBP;
+
+  let descPool = null;
+  let apFixed = F0, apGugur=false;
+  let cpFixed = F0, cpGugur=false;
+
+  const fixed = {};
+  const gugur = {};
+  function setFixed(key, frac){ fixed[key] = (fixed[key]||F0).add(frac); }
+
+  if(inp.nAL>0){
+    descPool = {maleKey:"AL", femaleKey:"AP", maleCount:inp.nAL, femaleCount:inp.nAP};
+    if(inp.nCL>0) gugur["CL"]="Gugur (dihalangi anak laki-laki)";
+    if(inp.nCP>0) gugur["CP"]="Gugur (dihalangi anak laki-laki)";
+  } else if(inp.nAP===0 && (inp.nCL>0||inp.nCP>0)){
+    descPool = {maleKey:"CL", femaleKey:"CP", maleCount:inp.nCL, femaleCount:inp.nCP};
+  } else if(inp.nAP>0){
+    apFixed = inp.nAP===1 ? new Frac(1,2) : new Frac(2,3);
+    if(inp.nCL>0){
+      descPool = {maleKey:"CL", femaleKey:"CP", maleCount:inp.nCL, femaleCount:inp.nCP};
+      notes.push("Cucu laki-laki (dari anak laki-laki) tampil sebagai 'aṣabah bersama cucu perempuan, mengambil sisa setelah bagian anak perempuan.");
+    } else if(inp.nCP>0){
+      if(inp.nAP===1){
+        cpFixed = new Frac(1,6);
+      } else {
+        cpGugur = true;
+        gugur["CP"] = "Gugur (2/3 sudah habis oleh 2+ anak perempuan, tidak ada cucu laki-laki penarik)";
+      }
+    }
+  }
+
+  if(apFixed && inp.nAP>0 && !apGugur) setFixed("AP", apFixed);
+  if(inp.nCP>0 && !descPool){
+    if(cpFixed.n>0) setFixed("CP", cpFixed);
+  }
+
+  let ayahResidueRole = false, kakekResidueRole = false;
+  if(inp.AY){
+    if(maleDesc){
+      setFixed("AY", new Frac(1,6));
+    } else if(anyDesc){
+      setFixed("AY", new Frac(1,6));
+      ayahResidueRole = true;
+    } else {
+      ayahResidueRole = true;
+    }
+  }
+  const kkPresent = inp.KK && !inp.AY;
+  if(kkPresent){
+    if(maleDesc){
+      setFixed("KK", new Frac(1,6));
+    } else {
+      kakekResidueRole = true;
+    }
+  } else if(inp.KK && inp.AY){
+    gugur["KK"] = "Gugur (dihalangi Ayah)";
+  }
+
+  let gharrawain = (inp.IB && inp.AY && (inp.SU || inp.nIS>0) && !anyDesc);
+  if(inp.IB && !gharrawain){
+    const reduce = anyDesc || sibTotalCount>=2;
+    setFixed("IB", reduce? new Frac(1,6) : new Frac(1,3));
+  }
+  if(inp.NN){
+    if(inp.IB) gugur["NN"]="Gugur (dihalangi Ibu)";
+    else setFixed("NN", new Frac(1,6));
+  }
+
+  if(inp.SU){
+    setFixed("SU", anyDesc? new Frac(1,4) : new Frac(1,2));
+  }
+  if(inp.nIS>0){
+    setFixed("IS", anyDesc? new Frac(1,8) : new Frac(1,4));
+  }
+
+  const sbTotal = inp.nSBL+inp.nSBP;
+  if(sbTotal>0){
+    if(anyDesc||inp.AY||inp.KK){
+      gugur["SB"] = "Gugur (dihalangi keturunan, ayah, atau kakek)";
+    } else if(sbTotal===1){
+      setFixed("SB", new Frac(1,6));
+    } else {
+      setFixed("SB", new Frac(1,3));
+    }
+  }
+
+  const kandungBlocked = maleDesc || inp.AY;
+  let kandungGroup = null;
+  if(!kandungBlocked && (inp.nSDK>0 || inp.nSRK>0)){
+    const poolTrigger = inp.nSDK>0 || (inp.nAP>0||inp.nCP>0) || kkPresent;
+    kandungGroup = {maleCount:inp.nSDK, femaleCount:inp.nSRK, mode: poolTrigger? 'pool':'fixedOnly'};
+  }
+  if(kandungBlocked){
+    if(inp.nSDK>0) gugur["SDK"]="Gugur (dihalangi anak/cucu laki-laki atau ayah)";
+    if(inp.nSRK>0) gugur["SRK"]="Gugur (dihalangi anak/cucu laki-laki atau ayah)";
+  }
+
+  const sdaBlocked = maleDesc || inp.AY || inp.nSDK>0;
+  const sraBlocked = maleDesc || inp.AY || inp.nSDK>0 || (inp.nSRK>=2 && inp.nSDA===0);
+  const seayahMaleCount = sdaBlocked? 0 : inp.nSDA;
+  const seayahFemaleCount = sraBlocked? 0 : inp.nSRA;
+  let seayahGroup = null;
+  if(seayahMaleCount>0 || seayahFemaleCount>0){
+    const poolTrigger = seayahMaleCount>0 || (inp.nAP>0||inp.nCP>0) || kkPresent;
+    seayahGroup = {maleCount:seayahMaleCount, femaleCount:seayahFemaleCount, mode: poolTrigger? 'pool':'fixedOnly'};
+  }
+  if(sdaBlocked && inp.nSDA>0){
+    gugur["SDA"] = (maleDesc||inp.AY) ? "Gugur (dihalangi anak/cucu laki-laki atau ayah)" : "Gugur (dihalangi saudara laki-laki kandung)";
+  }
+  if(sraBlocked && inp.nSRA>0){
+    gugur["SRA"] = (maleDesc||inp.AY) ? "Gugur (dihalangi anak/cucu laki-laki atau ayah)" :
+      (inp.nSDK>0 ? "Gugur (dihalangi saudara laki-laki kandung)" : "Gugur (dihalangi 2+ saudari kandung, tanpa saudara seayah penarik)");
+  }
+
+  if(kandungGroup && kandungGroup.mode==='fixedOnly'){
+    const n = kandungGroup.femaleCount;
+    setFixed("SRK", n===1? new Frac(1,2) : new Frac(2,3));
+  }
+  if(seayahGroup && seayahGroup.mode==='fixedOnly'){
+    const n = seayahGroup.femaleCount;
+    setFixed("SRA", n===1? new Frac(1,2) : new Frac(2,3));
+  }
+  const sibGroup = (kandungGroup && kandungGroup.mode==='pool') ? Object.assign({type:'kandung'}, kandungGroup)
+                  : (seayahGroup && seayahGroup.mode==='pool') ? Object.assign({type:'seayah'}, seayahGroup)
+                  : null;
+
+  let fixedSum = F0;
+  for(const k in fixed) fixedSum = fixedSum.add(fixed[k]);
+  let R = F1.sub(fixedSum);
+  const residueShares = {};
+
+  if(descPool){
+    const w = descPool.maleCount*2 + descPool.femaleCount*1;
+    if(w>0){
+      const perW = R.div(w);
+      residueShares[descPool.maleKey] = perW.mul(2*descPool.maleCount);
+      if(descPool.femaleCount>0) residueShares[descPool.femaleKey] = perW.mul(1*descPool.femaleCount);
+    }
+  } else if(ayahResidueRole){
+    residueShares["AY"] = R;
+  } else if(kakekResidueRole){
+    if(sibGroup && sibGroup.mode==='pool'){
+      const sw = sibGroup.maleCount*2 + sibGroup.femaleCount*1;
+      const optionA = new Frac(1,6);
+      const optionB = sw>0? R.mul(new Frac(2, 2+sw)) : R;
+      const optionC = R.div(3);
+      let kakekShare = Frac.max(optionA, optionB, optionC);
+      if(kakekShare.gt(R)) kakekShare = R;
+      residueShares["KK"] = kakekShare;
+      const remainder = R.sub(kakekShare);
+      if(sw>0){
+        const perW = remainder.div(sw);
+        if(sibGroup.maleCount>0) residueShares[sibGroup.type==='kandung'?'SDK':'SDA'] = perW.mul(2*sibGroup.maleCount);
+        if(sibGroup.femaleCount>0) residueShares[sibGroup.type==='kandung'?'SRK':'SRA'] = perW.mul(1*sibGroup.femaleCount);
+      }
+    } else {
+      residueShares["KK"] = R;
+    }
+  } else if(sibGroup && sibGroup.mode==='pool'){
+    const sw = sibGroup.maleCount*2 + sibGroup.femaleCount*1;
+    if(sw>0){
+      const perW = R.div(sw);
+      if(sibGroup.maleCount>0) residueShares[sibGroup.type==='kandung'?'SDK':'SDA'] = perW.mul(2*sibGroup.maleCount);
+      if(sibGroup.femaleCount>0) residueShares[sibGroup.type==='kandung'?'SRK':'SRA'] = perW.mul(1*sibGroup.femaleCount);
+    }
+  }
+
+  let residueSum = F0;
+  for(const k in residueShares) residueSum = residueSum.add(residueShares[k]);
+  let leftover = R.sub(residueSum);
+
+  let total = {};
+  for(const k in fixed) total[k] = (total[k]||F0).add(fixed[k]);
+  for(const k in residueShares) total[k] = (total[k]||F0).add(residueShares[k]);
+
+  if(gharrawain){
+    total = {};
+    const spouseKey = inp.SU? "SU" : "IS";
+    const sVal = inp.SU? new Frac(1,2) : new Frac(1,4);
+    total[spouseKey] = sVal;
+    const rest = F1.sub(sVal);
+    const ibuShare = rest.mul(new Frac(1,3));
+    total["IB"] = ibuShare;
+    total["AY"] = rest.sub(ibuShare);
+    specialCase = "gharrawain";
+    notes.push("Kasus Gharrawain/'Umariyyatain: Ibu mendapat 1/3 dari SISA setelah bagian pasangan (bukan 1/3 dari total harta), agar bagian Ayah tetap dua kali bagian Ibu.");
+    leftover = F0;
+  }
+
+  const akdariyyahCond = inp.SU && inp.IB && kkPresent && !inp.AY && !anyDesc &&
+    ((inp.nSRK===1 && inp.nSDK===0 && inp.nSDA===0 && inp.nSRA===0 && sbTotal===0) ||
+     (inp.nSRA===1 && inp.nSRK===0 && inp.nSDK===0 && inp.nSDA===0 && sbTotal===0));
+  if(akdariyyahCond){
+    total = {};
+    total["SU"] = new Frac(9,27);
+    total["IB"] = new Frac(6,27);
+    total["KK"] = new Frac(8,27);
+    if(inp.nSRK===1) total["SRK"] = new Frac(4,27); else total["SRA"] = new Frac(4,27);
+    specialCase = "akdariyyah";
+    notes.push("Kasus Akdariyyah (Suami + Ibu + Kakek + 1 Saudari Kandung/Seayah, tanpa ahli waris lain): asal masalah 6 di-'aul-kan menjadi 9, lalu bagian Kakek & Saudari digabung dan dibagi 2:1 atas dasar 27.");
+    leftover = F0;
+  }
+
+  let aulTriggered = false;
+  if(!gharrawain && !akdariyyahCond && Object.keys(residueShares).length===0 && !ayahResidueRole && !kakekResidueRole && fixedSum.gt(F1)){
+    aulTriggered = true;
+    total = {};
+    for(const k in fixed){ total[k] = fixed[k].div(fixedSum); }
+    notes.push(`Kasus 'Aul: total bagian fardh (${fixedSum.toString()}) melebihi 1. Semua bagian disesuaikan turun secara proporsional.`);
+    leftover = F0;
+  }
+
+  let raddTriggered = false;
+  if(!gharrawain && !akdariyyahCond && !aulTriggered && leftover.gt(F0)){
+    const eligible = Object.keys(fixed).filter(k=>k!=="SU"&&k!=="IS");
+    let eligSum = F0;
+    eligible.forEach(k=> eligSum = eligSum.add(fixed[k]));
+    if(eligible.length>0 && !eligSum.isZero()){
+      raddTriggered = true;
+      eligible.forEach(k=>{
+        const extra = leftover.mul(fixed[k]).div(eligSum);
+        total[k] = (total[k]||F0).add(extra);
+      });
+      notes.push(`Kasus Radd: sisa harta (${leftover.toString()}) tidak diambil 'aṣabah, dikembalikan proporsional kepada ahli waris fardh (selain suami/istri).`);
+      leftover = F0;
+    } else {
+      notes.push(`Sisa harta (${leftover.toString()}) tidak memiliki 'aṣabah maupun ahli waris radd yang berhak (pasangan tidak menerima radd). Bagian ini menjadi hak Baitul Māl / Dzawil Arḥām, bukan otomatis milik pasangan.`);
+    }
+  }
+
+  return {total, gugur, notes, specialCase, leftover, aulTriggered, raddTriggered};
+}
+
+// ================= UI STATE =================
+const state = {
+  nAL:0,nAP:0,nCL:0,nCP:0,
+  AY:false,KK:false,IB:false,NN:false,
+  nSDK:0,nSRK:0,nSDA:0,nSRA:0,
+  nSBL:0,nSBP:0,
+  SU:false,nIS:0,
+  harta:0, biaya:0, hutang:0, wasiat:0
+};
+const STEP_MAX = { nAL:20,nAP:20,nCL:20,nCP:20,nSDK:20,nSRK:20,nSDA:20,nSRA:20,nSBL:20,nSBP:20,nIS:4 };
+
+const META = {
+  AL:{label:"Anak Laki-laki", countKey:'nAL'},
+  AP:{label:"Anak Perempuan", countKey:'nAP'},
+  CL:{label:"Cucu Laki-laki", sub:"dari anak laki-laki", countKey:'nCL'},
+  CP:{label:"Cucu Perempuan", sub:"dari anak laki-laki", countKey:'nCP'},
+  AY:{label:"Ayah", countKey:null},
+  KK:{label:"Kakek", sub:"dari Ayah", countKey:null},
+  IB:{label:"Ibu", countKey:null},
+  NN:{label:"Nenek", countKey:null},
+  SU:{label:"Suami", countKey:null},
+  IS:{label:"Istri", countKey:'nIS'},
+  SDK:{label:"Saudara Laki-laki Kandung", countKey:'nSDK'},
+  SRK:{label:"Saudari Kandung", countKey:'nSRK'},
+  SDA:{label:"Saudara Laki-laki Seayah", countKey:'nSDA'},
+  SRA:{label:"Saudari Seayah", countKey:'nSRA'},
+  SB:{label:"Saudara/i Seibu", countKey:'__SB__'},
+};
+const DISPLAY_ORDER = ["AL","AP","CL","CP","AY","IB","SU","IS","KK","NN","SDK","SRK","SDA","SRA","SB"];
+
+function heirCount(key){
+  const m = META[key];
+  if(m.countKey===null) return 1;
+  if(m.countKey==='__SB__') return state.nSBL+state.nSBP;
+  return state[m.countKey];
+}
+
+// ---------- currency formatting ----------
+function fmtRp(n){
+  n = Math.round(n||0);
+  return "Rp " + n.toLocaleString('id-ID');
+}
+function parseDigits(str){ return parseInt((str||"").replace(/[^0-9]/g,""),10) || 0; }
+
+// ---------- wire up steppers ----------
+document.querySelectorAll('.stepper').forEach(el=>{
+  const key = el.dataset.key;
+  const valEl = el.querySelector('.val');
+  const max = STEP_MAX[key] ?? 20;
+  function render(){ valEl.textContent = state[key]; }
+  el.querySelector('.minus').addEventListener('click', ()=>{
+    if(state[key]>0){ state[key]--; render(); }
+  });
+  el.querySelector('.plus').addEventListener('click', ()=>{
+    if(state[key]<max){
+      state[key]++;
+      if(key==='nIS' && state[key]>0){ state.SU=false; document.querySelector('.toggle[data-key="SU"]').classList.remove('on'); }
+      render();
+    }
+  });
+  render();
+});
+
+// ---------- wire up toggles ----------
+document.querySelectorAll('.toggle').forEach(el=>{
+  const key = el.dataset.key;
+  el.addEventListener('click', ()=>{
+    state[key] = !state[key];
+    el.classList.toggle('on', state[key]);
+    if(key==='SU' && state.SU){ state.nIS=0; document.querySelector('.stepper[data-key="nIS"] .val').textContent='0'; }
+  });
+});
+
+// ---------- currency inputs ----------
+document.querySelectorAll('input.curr').forEach(inp=>{
+  const key = inp.dataset.key;
+  inp.addEventListener('input', ()=>{
+    const digits = parseDigits(inp.value);
+    state[key] = digits;
+    inp.value = digits? digits.toLocaleString('id-ID') : "";
+    if(key==='biaya' || key==='hutang' || key==='wasiat' || key==='harta'){ checkWasiatCap(); }
+  });
+});
+
+function checkWasiatCap(){
+  const capBase = Math.max(0, state.harta - state.biaya - state.hutang);
+  const cap = capBase/3;
+  const noteEl = document.getElementById('capNote');
+  if(state.wasiat > cap && cap>0){
+    noteEl.textContent = `Wasiat melebihi 1/3 dari sisa harta. Otomatis dibatasi menjadi ${fmtRp(cap)}.`;
+  } else if(state.wasiat > 0 && cap===0){
+    noteEl.textContent = `Sisa harta setelah biaya & hutang adalah 0, wasiat tidak dapat diberikan.`;
+  } else {
+    noteEl.textContent = "";
+  }
+}
+
+// ---------- advanced toggle ----------
+const advToggle = document.getElementById('advToggle');
+const advBody = document.getElementById('advBody');
+advToggle.addEventListener('click', ()=>{
+  advToggle.classList.toggle('open');
+  advBody.classList.toggle('open');
+});
+
+// ================= CALCULATE & RENDER =================
+document.getElementById('calcBtn').addEventListener('click', runCalculation);
+
+function runCalculation(){
+  const anyHeir = ["nAL","nAP","nCL","nCP","nSDK","nSRK","nSDA","nSRA","nSBL","nSBP","nIS"].some(k=>state[k]>0) || state.AY||state.KK||state.IB||state.NN||state.SU;
+  const resultsEl = document.getElementById('results');
+
+  if(!anyHeir){
+    resultsEl.classList.add('show');
+    document.getElementById('heirsList').innerHTML = '<div class="empty-state">Pilih minimal satu ahli waris terlebih dahulu untuk menghitung pembagian.</div>';
+    document.getElementById('summaryGrid').innerHTML = '';
+    document.getElementById('badgeRow').innerHTML = '';
+    document.getElementById('notesCard').style.display='none';
+    document.getElementById('gugurCard').style.display='none';
+    switchTab('page-hasil');
+    return;
+  }
+
+  const r = calculate(state);
+
+  // net harta
+  const capBase = Math.max(0, state.harta - state.biaya - state.hutang);
+  const wasiatClamped = Math.min(state.wasiat, capBase/3);
+  const netHarta = Math.max(0, capBase - wasiatClamped);
+
+  // ---- summary ----
+  const badgeRow = document.getElementById('badgeRow');
+  badgeRow.innerHTML = '';
+  const badges = [];
+  if(r.specialCase==='gharrawain') badges.push('Gharrawain / \'Umariyyatain');
+  if(r.specialCase==='akdariyyah') badges.push('Akdariyyah');
+  if(r.aulTriggered) badges.push("'Aul");
+  if(r.raddTriggered) badges.push('Radd');
+  if(badges.length===0) badges.push('Kasus Umum');
+  badges.forEach(b=>{
+    const s = document.createElement('span');
+    s.className = 'badge' + (b!=='Kasus Umum' ? ' hot':'');
+    s.textContent = b;
+    badgeRow.appendChild(s);
+  });
+
+  // asal masalah = LCM of denominators of nonzero shares
+  let asalMasalah = 1;
+  Object.keys(r.total).forEach(k=>{ if(!r.total[k].isZero()) asalMasalah = lcm(asalMasalah, r.total[k].d); });
+
+  const grid = document.getElementById('summaryGrid');
+  grid.innerHTML = `
+    <div class="summary-item"><div class="lab">Harta Kotor</div><div class="val">${fmtRp(state.harta)}</div></div>
+    <div class="summary-item"><div class="lab">Total Pengurangan</div><div class="val">${fmtRp(state.biaya+state.hutang+wasiatClamped)}</div></div>
+    <div class="summary-item wide"><div class="lab">Harta Bersih Dibagi ke Ahli Waris</div><div class="val">${fmtRp(netHarta)}</div></div>
+    <div class="summary-item"><div class="lab">Asal Masalah</div><div class="val">${asalMasalah}</div></div>
+    <div class="summary-item"><div class="lab">Jumlah Kategori Ahli Waris</div><div class="val">${Object.keys(r.total).filter(k=>!r.total[k].isZero()).length}</div></div>
+  `;
+
+  // ---- heirs list ----
+  const list = document.getElementById('heirsList');
+  list.innerHTML = '';
+  let anyRow = false;
+  DISPLAY_ORDER.forEach(key=>{
+    const frac = r.total[key];
+    if(!frac || frac.isZero()) return;
+    anyRow = true;
+    const m = META[key];
+    const count = heirCount(key);
+    const totalRp = frac.toNumber() * netHarta;
+    const perRp = count>0 ? totalRp/count : totalRp;
+    const row = document.createElement('div');
+    row.className = 'heir-row';
+    row.innerHTML = `
+      <div>
+        <div class="heir-name">${m.label}${m.sub? ` <span style="font-weight:400;color:var(--text-faint);font-size:11.5px;">(${m.sub})</span>`:''}</div>
+        <div class="heir-meta">${count} orang &middot; bagian ${frac.toString()}</div>
+      </div>
+      <div class="heir-right">
+        <div class="heir-total">${fmtRp(totalRp)}</div>
+        <div class="heir-per">${count>1? fmtRp(perRp)+' /orang' : ''}</div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+  if(!anyRow){
+    list.innerHTML = '<div class="empty-state">Tidak ada ahli waris yang menerima bagian dari kombinasi ini.</div>';
+  }
+  if(!r.leftover.isZero()){
+    const row = document.createElement('div');
+    row.className='heir-row';
+    row.innerHTML = `<div><div class="heir-name">Sisa (Baitul Māl / Dzawil Arḥām)</div><div class="heir-meta">bagian ${r.leftover.toString()}</div></div><div class="heir-right"><div class="heir-total">${fmtRp(r.leftover.toNumber()*netHarta)}</div></div>`;
+    list.appendChild(row);
+  }
+
+  // ---- notes ----
+  const notesCard = document.getElementById('notesCard');
+  const notesList = document.getElementById('notesList');
+  notesList.innerHTML='';
+  if(r.notes.length>0){
+    notesCard.style.display='';
+    r.notes.forEach(n=>{
+      const d = document.createElement('div');
+      d.className='note-item';
+      d.innerHTML = `<div class="dot"></div><div>${n}</div>`;
+      notesList.appendChild(d);
+    });
+  } else {
+    notesCard.style.display='none';
+  }
+
+  // ---- gugur ----
+  const gugurCard = document.getElementById('gugurCard');
+  const gugurList = document.getElementById('gugurList');
+  gugurList.innerHTML='';
+  const gugurKeys = Object.keys(r.gugur);
+  if(gugurKeys.length>0){
+    gugurCard.style.display='';
+    gugurKeys.forEach(key=>{
+      const m = META[key];
+      const d = document.createElement('div');
+      d.className='gugur-item';
+      d.innerHTML = `<b>${m? m.label : key}</b><span>${r.gugur[key]}</span>`;
+      gugurList.appendChild(d);
+    });
+  } else {
+    gugurCard.style.display='none';
+  }
+
+  resultsEl.classList.add('show');
+  switchTab('page-hasil');
+}
+
+
+// ================= MOBILE APP: TABS & TRANSITIONS =================
+const HEADER_META = {
+  'page-waris': {title:'Ahli Waris', sub:'Masukkan data ahli waris'},
+  'page-harta': {title:'Harta Warisan', sub:'Nominal & pengurangan'},
+  'page-hasil': {title:'Hasil Pembagian', sub:'Rincian per ahli waris'},
+  'page-info':  {title:'Info', sub:'Tentang & disclaimer'}
+};
+const mainEl = document.querySelector('main.pages');
+const headerTitleEl = document.getElementById('headerTitle');
+const headerSubEl = document.getElementById('headerSub');
+
+function switchTab(targetId){
+  document.querySelectorAll('.page').forEach(p=>{
+    p.classList.remove('active');
+  });
+  const target = document.getElementById(targetId);
+  target.classList.add('active');
+  // retrigger animation
+  target.style.animation = 'none';
+  void target.offsetWidth;
+  target.style.animation = '';
+
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active', n.dataset.target===targetId);
+  });
+
+  const meta = HEADER_META[targetId];
+  if(meta){
+    headerTitleEl.textContent = meta.title;
+    headerSubEl.textContent = meta.sub;
+  }
+  if(mainEl) mainEl.scrollTo({top:0, behavior:'instant' in document.documentElement.style ? 'instant' : 'auto'});
+}
+
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.target));
+});
+</script>
+<script>
+// ================= PWA: OFFLINE SUPPORT =================
+// Service workers only run over https (or http://localhost) — registration
+// is skipped silently when the file is opened directly (file://) so no
+// console errors show up in that case; deploy to any static HTTPS host
+// (GitHub Pages, Netlify, Vercel, etc.) to get real offline caching + install.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* offline on first load — fine, will retry next visit */ });
+  });
+}
+</script>
+</body>
+</html>
